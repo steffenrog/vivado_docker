@@ -35,6 +35,27 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     xorg \
     openbox \
+    iproute2 \
+    gawk \
+    python3 \
+    python3-pip \
+    python3-pexpect \
+    xz-utils \
+    zlib1g-dev \
+    net-tools \
+    libtool \
+    flex \
+    bison \
+    libssl-dev \
+    libncurses5-dev \
+    libstdc++6 \
+    texinfo \
+    gcc-multilib \
+    g++-multilib \
+    expect \
+    dosfstools \
+    u-boot-tools \
+    device-tree-compiler \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
