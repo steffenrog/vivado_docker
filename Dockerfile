@@ -44,6 +44,8 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     net-tools \
     libtool \
+    rsync \
+    bc \
     flex \
     bison \
     libssl-dev \
@@ -60,10 +62,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up locale
-RUN locale-gen=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+#RUN locale-gen=en_US.UTF-8
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 # Create a non-root user with sudo access
 RUN useradd -m -s /bin/bash xilinx && \
@@ -75,16 +79,13 @@ RUN mkdir -p /opt/Xilinx && \
     chown -R xilinx:xilinx /opt/Xilinx
 
 USER xilinx
-WORKDIR /home/xilinx
-
-# Add script to run Xilinx installer
-RUN echo '#!/bin/bash\n\
-echo "Please run the Xilinx installer with:"\n\
-echo "sudo ./xsetup -a XilinxEULA,3rdPartyEULA,WebTalkTerms -b AuthTokenGen -e"\n\
-echo "or follow the interactive installer"\n\
-' > /home/xilinx/run_installer.sh && chmod +x /home/xilinx/run_installer.sh
+WORKDIR /home/xilinx/projects
 
 # Default environment setup for Xilinx tools
-RUN echo 'source /opt/Xilinx/Vitis/2023.2/settings64.sh 2>/dev/null || echo "Xilinx tools not yet installed"' >> /home/xilinx/.bashrc
-
+RUN echo 'source /opt/Xilinx/Vitis/2023.2/settings64.sh 2>/dev/null || echo "Xilinx-Vitis tools not yet installed"' >> /home/xilinx/.bashrc
+RUN echo 'source /opt/Xilinx/Vivado/2023.2/settings64.sh 2>/dev/null || echo "Xilinx-Vivado tools not yet installed"' >> /home/xilinx/.bashrc
+RUN echo 'source /opt/Xilinx/PetaLinux/2023.2/bin/settings.sh 2>/dev/null || echo "Xilinx-PetaLinux tools not yet installed"' >> /home/xilinx/.bashrc
+RUN echo "kernel.unprivileged_userns_clone=1" | sudo tee /etc/sysctl.d/00-local-userns.conf
+RUN echo "kernel.unprivileged_userns_clone=1" | sudo tee /etc/sysctl.d/userns.conf
+RUN sudo sysctl -w kernel.unprivileged_userns_clone=1
 ENTRYPOINT ["/bin/bash"]
